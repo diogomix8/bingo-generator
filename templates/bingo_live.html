@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}🎲 Bingo en Vivo{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bingo-live.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-broadcast text-danger"></i>
+            Bingo en Vivo
+        </h1>
+    </div>
+</div>
+
+<!-- Configuración inicial -->
+<div id="config-panel" class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <i class="bi bi-gear me-2"></i>Configurar Jugada
+    </div>
+    <div class="card-body">
+        <form id="form-iniciar">
+            <div class="row align-items-end">
+                <div class="col-md-8">
+                    <label for="archivo-corel" class="form-label">Archivo de Bingos</label>
+                    <select id="archivo-corel" class="form-select" required>
+                        <option value="">Seleccionar archivo...</option>
+                        {% for gen in generaciones %}
+                        <option value="{{ gen.archivo_corel }}">{{ gen.nombre }} ({{ gen.total_bingos }} bingos)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-success btn-lg w-100">
+                        <i class="bi bi-play-fill me-2"></i>Iniciar Jugada
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Panel de juego (oculto hasta iniciar) -->
+<div id="game-panel" class="d-none">
+    
+    <!-- Controles y estado -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-info-circle me-2"></i>Estado de la Jugada</span>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="toggle-sonido" checked>
+                        <label class="form-check-label text-white" for="toggle-sonido">
+                            <i class="bi bi-volume-up"></i>
+                        </label>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h2 id="contador-bolillas" class="display-4 text-primary">0</h2>
+                            <small class="text-muted">Bolillas</small>
+                        </div>
+                        <div class="col-4">
+                            <h2 id="total-cartones" class="display-4 text-secondary">0</h2>
+                            <small class="text-muted">Cartones</small>
+                        </div>
+                        <div class="col-4">
+                            <h2 id="mejor-aciertos" class="display-4 text-success">0</h2>
+                            <small class="text-muted">Mejor</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-warning">
+                    <i class="bi bi-clock-history me-2"></i>Últimas Bolillas
+                </div>
+                <div class="card-body">
+                    <div id="ultimas-bolillas" class="d-flex flex-wrap gap-2 justify-content-center">
+                        <span class="text-muted">Ninguna bolilla cantada aún</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex gap-2">
+                        <button id="btn-deshacer" class="btn btn-outline-secondary flex-grow-1" disabled>
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Deshacer
+                        </button>
+                        <button id="btn-reiniciar" class="btn btn-outline-danger flex-grow-1">
+                            <i class="bi bi-arrow-repeat me-1"></i>Reiniciar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bolillero -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <i class="bi bi-circle-fill me-2"></i>Bolillero - Click en una bolilla para cantarla
+        </div>
+        <div class="card-body">
+            <div id="bolillero" class="bolillero-grid">
+                {% for i in range(1, 61) %}
+                <button class="bolilla" data-numero="{{ i }}">{{ i }}</button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 20 Ranking -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-trophy me-2"></i>Top 20 - Más Cerca del BINGO</span>
+            <span id="badge-ganador" class="badge bg-danger d-none">
+                <i class="bi bi-star-fill me-1"></i>¡BINGO!
+            </span>
+        </div>
+        <div class="card-body">
+            <div id="ranking-container" class="row g-2">
+                <div class="col-12 text-center text-muted">
+                    <p>Inicia una jugada para ver el ranking</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal de detalle de cartón -->
+<div class="modal fade" id="modal-detalle" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-card-list me-2"></i>
+                    Detalle del Bingo <span id="modal-bingo-id"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-cartones" class="row g-3">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de celebración BINGO -->
+<div class="modal fade" id="modal-bingo" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bingo-celebration">
+            <div class="modal-body text-center py-5">
+                <div class="bingo-confetti"></div>
+                <h1 class="display-1 text-warning bingo-text">🎉 ¡BINGO! 🎉</h1>
+                <div id="ganadores-info" class="mt-4">
+                    <!-- Se llena dinámicamente -->
+                </div>
+                <div class="mt-4">
+                    <p class="lead">Bolillas cantadas: <strong id="bolillas-finales">0</strong></p>
+                </div>
+                <div class="mt-4 d-flex gap-3 justify-content-center">
+                    <button class="btn btn-lg btn-success" onclick="reiniciarJugada()">
+                        <i class="bi bi-arrow-repeat me-2"></i>Nueva Jugada
+                    </button>
+                    <button class="btn btn-lg btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-eye me-2"></i>Ver Tablero
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/bingo-live.js') }}"></script>
+{% endblock %}

@@ -47,6 +47,11 @@
                             <i class="bi bi-play-circle me-1"></i> Simulador
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'bingo_live' in request.endpoint %}active{% endif %}" href="{{ url_for('bingo_live') }}">
+                            <i class="bi bi-broadcast me-1"></i> En Vivo
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

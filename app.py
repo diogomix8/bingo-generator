@@ -26,6 +26,12 @@ from services.simulador_service import (
     buscar_archivo_corel,
     obtener_simulaciones_existentes
 )
+from services.bingo_live_service import (
+    iniciar_jugada,
+    obtener_jugada,
+    eliminar_jugada,
+    buscar_archivo_corel as buscar_archivo_corel_live
+)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24))
@@ -232,6 +238,144 @@ def simulador_historial():
     """Historial de simulaciones."""
     simulaciones = obtener_simulaciones_existentes()
     return render_template('simulador_historial.html', simulaciones=simulaciones)
+
+
+# =====================================================================
+# === RUTAS DE BINGO EN VIVO ===
+# =====================================================================
+
+@app.route('/bingo-live')
+def bingo_live():
+    """Página del simulador en vivo."""
+    generaciones = obtener_generaciones_existentes()
+    
+    # Preparar lista con información de archivos corel
+    generaciones_con_archivo = []
+    for gen in generaciones:
+        archivo_corel = os.path.join('bingos', gen['nombre'], f"{gen['nombre']}_corel.csv")
+        if os.path.exists(archivo_corel):
+            generaciones_con_archivo.append({
+                'nombre': gen['nombre'],
+                'archivo_corel': archivo_corel,
+                'total_bingos': gen.get('total_bingos', 'N/A')
+            })
+    
+    return render_template('bingo_live.html', generaciones=generaciones_con_archivo)
+
+
+@app.route('/api/bingo-live/iniciar', methods=['POST'])
+def api_bingo_live_iniciar():
+    """Inicia una nueva jugada en vivo."""
+    try:
+        data = request.get_json()
+        archivo_corel = data.get('archivo_corel')
+        
+        if not archivo_corel or not os.path.exists(archivo_corel):
+            return jsonify({'exito': False, 'mensaje': 'Archivo no encontrado'})
+        
+        jugada_id, estado = iniciar_jugada(archivo_corel)
+        
+        return jsonify({
+            'exito': True,
+            'jugada_id': jugada_id,
+            'estado': estado
+        })
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
+
+
+@app.route('/api/bingo-live/cantar/<int:numero>', methods=['POST'])
+def api_bingo_live_cantar(numero):
+    """Canta una bolilla."""
+    try:
+        data = request.get_json()
+        jugada_id = data.get('jugada_id')
+        
+        jugada = obtener_jugada(jugada_id)
+        if not jugada:
+            return jsonify({'exito': False, 'mensaje': 'Jugada no encontrada'})
+        
+        resultado = jugada.cantar_bolilla(numero)
+        return jsonify(resultado)
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
+
+
+@app.route('/api/bingo-live/deshacer', methods=['POST'])
+def api_bingo_live_deshacer():
+    """Deshace la última bolilla cantada."""
+    try:
+        data = request.get_json()
+        jugada_id = data.get('jugada_id')
+        
+        jugada = obtener_jugada(jugada_id)
+        if not jugada:
+            return jsonify({'exito': False, 'mensaje': 'Jugada no encontrada'})
+        
+        resultado = jugada.deshacer_bolilla()
+        return jsonify(resultado)
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
+
+
+@app.route('/api/bingo-live/estado')
+def api_bingo_live_estado():
+    """Obtiene el estado actual de la jugada."""
+    try:
+        jugada_id = request.args.get('jugada_id')
+        
+        jugada = obtener_jugada(jugada_id)
+        if not jugada:
+            return jsonify({'exito': False, 'mensaje': 'Jugada no encontrada'})
+        
+        return jsonify({
+            'exito': True,
+            'estado': jugada.obtener_estado()
+        })
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
+
+
+@app.route('/api/bingo-live/reiniciar', methods=['POST'])
+def api_bingo_live_reiniciar():
+    """Reinicia la jugada actual."""
+    try:
+        data = request.get_json()
+        jugada_id = data.get('jugada_id')
+        
+        jugada = obtener_jugada(jugada_id)
+        if not jugada:
+            return jsonify({'exito': False, 'mensaje': 'Jugada no encontrada'})
+        
+        jugada.reiniciar()
+        
+        return jsonify({
+            'exito': True,
+            'estado': jugada.obtener_estado()
+        })
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
+
+
+@app.route('/api/bingo-live/detalle/<bingo_id>')
+def api_bingo_live_detalle(bingo_id):
+    """Obtiene el detalle de los cartones de un bingo específico."""
+    try:
+        jugada_id = request.args.get('jugada_id')
+        
+        jugada = obtener_jugada(jugada_id)
+        if not jugada:
+            return jsonify({'exito': False, 'mensaje': 'Jugada no encontrada'})
+        
+        cartones = jugada.obtener_carton_detalle(bingo_id)
+        
+        return jsonify({
+            'exito': True,
+            'bingo_id': bingo_id,
+            'cartones': cartones
+        })
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
 
 
 # =====================================================================
