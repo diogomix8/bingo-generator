@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Simulador - Bingo Generator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                <li class="breadcrumb-item active">Simulador</li>
+            </ol>
+        </nav>
+        
+        <h2 class="mb-4">
+            <i class="bi bi-play-circle text-success me-2"></i>
+            Simulador de Jugadas
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Configuración de Simulación</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="simuladorForm">
+                    <div class="row g-3">
+                        <!-- Selección de archivo Corel -->
+                        <div class="col-12">
+                            <label for="archivo_corel" class="form-label">
+                                <i class="bi bi-file-earmark-spreadsheet me-1"></i>
+                                Archivo de Bingos (Corel)
+                            </label>
+                            <select class="form-select" id="archivo_corel" name="archivo_corel" required>
+                                <option value="">-- Selecciona una generación --</option>
+                                {% for g in generaciones %}
+                                <option value="{{ g.archivo_corel }}">
+                                    {{ g.nombre }} ({{ g.fecha_modificacion.strftime('%d/%m/%Y') }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Selecciona el archivo de bingos a simular</div>
+                        </div>
+                        
+                        <!-- Número de Jugadas -->
+                        <div class="col-md-6">
+                            <label for="numero_jugadas" class="form-label">
+                                <i class="bi bi-hash me-1"></i>
+                                Número de Jugadas
+                            </label>
+                            <input type="number" class="form-control" id="numero_jugadas" name="numero_jugadas" 
+                                   value="{{ defaults.numero_jugadas }}" min="1" max="1000" required>
+                            <div class="form-text">Cantidad de jugadas a simular</div>
+                        </div>
+                        
+                        <!-- Seed (opcional) -->
+                        <div class="col-md-6">
+                            <label for="seed" class="form-label">
+                                <i class="bi bi-key me-1"></i>
+                                Seed (Opcional)
+                            </label>
+                            <input type="number" class="form-control" id="seed" name="seed" 
+                                   value="{{ defaults.seed }}" placeholder="Aleatorio si vacío">
+                            <div class="form-text">Dejar vacío para resultados aleatorios</div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg" id="btnSimular">
+                            <i class="bi bi-play-fill me-2"></i>
+                            Ejecutar Simulación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Info Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    ¿Cómo funciona?
+                </h6>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li class="mb-2">Selecciona un archivo de bingos generado</li>
+                    <li class="mb-2">Indica cuántas jugadas simular</li>
+                    <li class="mb-2">El sistema "cantará" bolillas aleatorias</li>
+                    <li class="mb-2">Detectará ganadores (10/10 aciertos)</li>
+                    <li>Generará estadísticas y gráficos</li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- Estadísticas que se calcularán -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>
+                    Estadísticas a Generar
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="bi bi-check text-success me-2"></i>
+                        Bolillas hasta el primer ganador
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check text-success me-2"></i>
+                        Ganadores simultáneos por jugada
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check text-success me-2"></i>
+                        Ranking de bingos más ganadores
+                    </li>
+                    <li>
+                        <i class="bi bi-check text-success me-2"></i>
+                        Distribución por tipo de cartón (A-F)
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if not generaciones %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>No hay bingos generados.</strong> 
+            Primero debes <a href="{{ url_for('generador') }}">generar bingos</a> para poder simular jugadas.
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Mostrar loading al enviar
+    document.getElementById('simuladorForm').addEventListener('submit', function() {
+        const btn = document.getElementById('btnSimular');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Simulando...';
+    });
+</script>
+{% endblock %}

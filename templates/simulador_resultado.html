@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Resultado Simulación - Bingo Generator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('simulador') }}">Simulador</a></li>
+                <li class="breadcrumb-item active">Resultado</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-check-circle text-success me-2"></i>
+                Simulación Completada
+            </h2>
+            <div>
+                <a href="{{ url_for('descargar_simulacion', carpeta=carpeta, archivo=carpeta + '_resultados.csv') }}" class="btn btn-success me-2">
+                    <i class="bi bi-download me-2"></i>
+                    Descargar CSV
+                </a>
+                <a href="{{ url_for('simulador') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-play-circle me-2"></i>
+                    Nueva Simulación
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row g-4 mb-4">
+    <!-- Histograma de bolillas -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-bar-chart me-2"></i>
+                    Bolillas hasta el Primer BINGO
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="graficoHistograma" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ganadores por jugada -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-people me-2"></i>
+                    Ganadores Simultáneos por Jugada
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="graficoGanadores" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ranking de bingos -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-trophy me-2"></i>
+                    Top 10 Bingos Más Ganadores
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="graficoRanking" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Distribución por tipo de cartón -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-pie-chart me-2"></i>
+                    Distribución por Tipo de Cartón
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="graficoCartones" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview de resultados -->
+{% if preview_resultados %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-table me-2"></i>
+                    Vista Previa de Resultados (primeras 10 jugadas)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-sm">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Jugada</th>
+                                <th>Bolillas</th>
+                                <th>Ganadores</th>
+                                <th>IDs Ganadores</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in preview_resultados %}
+                            <tr>
+                                <td>{{ r.Jugada }}</td>
+                                <td><span class="badge bg-primary">{{ r.Bolillas_Hasta_Ganador }}</span></td>
+                                <td><span class="badge bg-success">{{ r.Cantidad_Ganadores }}</span></td>
+                                <td><code>{{ r.Ganadores }}</code></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Datos de gráficos desde el servidor
+    const graficosData = {{ graficos_data | safe }};
+    
+    // Renderizar gráficos con Plotly
+    if (graficosData.histograma) {
+        Plotly.newPlot('graficoHistograma', 
+            graficosData.histograma.data, 
+            {...graficosData.histograma.layout, margin: {t: 40, b: 40, l: 50, r: 20}},
+            {responsive: true}
+        );
+    }
+    
+    if (graficosData.ganadores) {
+        Plotly.newPlot('graficoGanadores', 
+            graficosData.ganadores.data, 
+            {...graficosData.ganadores.layout, margin: {t: 40, b: 40, l: 50, r: 20}},
+            {responsive: true}
+        );
+    }
+    
+    if (graficosData.ranking) {
+        Plotly.newPlot('graficoRanking', 
+            graficosData.ranking.data, 
+            {...graficosData.ranking.layout, margin: {t: 40, b: 40, l: 100, r: 20}},
+            {responsive: true}
+        );
+    }
+    
+    if (graficosData.cartones) {
+        Plotly.newPlot('graficoCartones', 
+            graficosData.cartones.data, 
+            {...graficosData.cartones.layout, margin: {t: 40, b: 40, l: 50, r: 20}},
+            {responsive: true}
+        );
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Bingo Generator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 text-center mb-5">
+        <h1 class="display-4">
+            <i class="bi bi-grid-3x3-gap-fill text-primary"></i>
+            Bingo Generator
+        </h1>
+        <p class="lead text-muted">
+            Genera combinaciones únicas de bingo y simula jugadas con estadísticas detalladas
+        </p>
+    </div>
+</div>
+
+<!-- Cards principales -->
+<div class="row g-4 mb-5">
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Generador de Bingos
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    Genera combinaciones únicas de cartones de bingo con configuración personalizable.
+                </p>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Configura cantidad de bingos</li>
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Exporta en formato Corel</li>
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Auditoría automática</li>
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Seed para reproducibilidad</li>
+                </ul>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('generador') }}" class="btn btn-primary w-100">
+                    <i class="bi bi-arrow-right me-2"></i>
+                    Ir al Generador
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-play-circle me-2"></i>
+                    Simulador de Jugadas
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    Simula jugadas aleatorias y obtén estadísticas detalladas con gráficos interactivos.
+                </p>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Simula múltiples jugadas</li>
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Gráficos interactivos</li>
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Estadísticas detalladas</li>
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Exporta resultados a CSV</li>
+                </ul>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('simulador') }}" class="btn btn-success w-100">
+                    <i class="bi bi-arrow-right me-2"></i>
+                    Ir al Simulador
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Historial reciente -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Últimas Generaciones
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if generaciones %}
+                    <ul class="list-group list-group-flush">
+                        {% for g in generaciones %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="bi bi-folder2 me-2 text-primary"></i>
+                                {{ g.nombre }}
+                            </span>
+                            <small class="text-muted">{{ g.fecha_modificacion.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{{ url_for('generador_historial') }}" class="btn btn-sm btn-outline-primary mt-3">
+                        Ver todo el historial
+                    </a>
+                {% else %}
+                    <p class="text-muted mb-0">No hay generaciones aún</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Últimas Simulaciones
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if simulaciones %}
+                    <ul class="list-group list-group-flush">
+                        {% for s in simulaciones %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="bi bi-graph-up me-2 text-success"></i>
+                                {{ s.nombre }}
+                            </span>
+                            <small class="text-muted">{{ s.fecha_modificacion.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{{ url_for('simulador_historial') }}" class="btn btn-sm btn-outline-success mt-3">
+                        Ver todo el historial
+                    </a>
+                {% else %}
+                    <p class="text-muted mb-0">No hay simulaciones aún</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

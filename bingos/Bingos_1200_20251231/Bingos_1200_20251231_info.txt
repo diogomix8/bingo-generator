@@ -1,0 +1,22 @@
+============================================
+     METADATOS DE GENERACIÓN DE BINGOS
+============================================
+Fecha y hora:          2025-12-31 02:32:53
+Seed:                  31122025
+
+Configuración:
+  Bingos físicos:      1200
+  Cartones por bingo:  3
+  Combinaciones:       3600
+  Números por cartón:  10
+  Rango de números:    1 - 60
+
+Numeración:
+  CARTON 1:            0001 - 0600
+  CARTON 2:            0601 - 1200
+
+Archivos generados:
+  - bingos\Bingos_1200_20251231\Bingos_1200_20251231_simple.csv
+  - bingos\Bingos_1200_20251231\Bingos_1200_20251231_corel.csv
+  - bingos\Bingos_1200_20251231\Bingos_1200_20251231_info.txt
+============================================

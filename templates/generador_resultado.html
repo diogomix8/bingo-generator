@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Resultado Generación - Bingo Generator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('generador') }}">Generador</a></li>
+                <li class="breadcrumb-item active">Resultado</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-check-circle text-success me-2"></i>
+                Generación Completada
+            </h2>
+            <a href="{{ url_for('generador') }}" class="btn btn-outline-primary">
+                <i class="bi bi-plus-circle me-2"></i>
+                Nueva Generación
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Metadatos -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Información de la Generación
+                </h5>
+            </div>
+            <div class="card-body">
+                <pre class="bg-light p-3 rounded" style="white-space: pre-wrap; font-size: 0.85rem;">{{ info_contenido }}</pre>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Descargas -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-download me-2"></i>
+                    Descargar Archivos
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{{ url_for('descargar_bingo', carpeta=carpeta, archivo=archivos.corel) }}" 
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i>
+                            <strong>{{ archivos.corel }}</strong>
+                            <br><small class="text-muted">Formato para Corel Draw</small>
+                        </div>
+                        <span class="badge bg-primary">CSV</span>
+                    </a>
+                    
+                    <a href="{{ url_for('descargar_bingo', carpeta=carpeta, archivo=archivos.simple) }}" 
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>
+                            <strong>{{ archivos.simple }}</strong>
+                            <br><small class="text-muted">Formato simple (1 fila = 1 cartón)</small>
+                        </div>
+                        <span class="badge bg-success">CSV</span>
+                    </a>
+                    
+                    <a href="{{ url_for('descargar_bingo', carpeta=carpeta, archivo=archivos.info) }}" 
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-file-earmark-text text-secondary me-2"></i>
+                            <strong>{{ archivos.info }}</strong>
+                            <br><small class="text-muted">Metadatos de la generación</small>
+                        </div>
+                        <span class="badge bg-secondary">TXT</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview de datos -->
+{% if preview_simple %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-table me-2"></i>
+                    Vista Previa (primeras 10 filas)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-sm">
+                        <thead class="table-dark">
+                            <tr>
+                                {% for col in columnas_simple %}
+                                <th>{{ col }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for fila in preview_simple %}
+                            <tr>
+                                {% for valor in fila %}
+                                <td>{{ valor }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Acciones -->
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a href="{{ url_for('simulador') }}" class="btn btn-success btn-lg me-2">
+            <i class="bi bi-play-circle me-2"></i>
+            Simular Jugadas
+        </a>
+        <a href="{{ url_for('generador_historial') }}" class="btn btn-outline-secondary btn-lg">
+            <i class="bi bi-clock-history me-2"></i>
+            Ver Historial
+        </a>
+    </div>
+</div>
+{% endblock %}

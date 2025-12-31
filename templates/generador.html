@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Generador - Bingo Generator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+                <li class="breadcrumb-item active">Generador</li>
+            </ol>
+        </nav>
+        
+        <h2 class="mb-4">
+            <i class="bi bi-plus-circle text-primary me-2"></i>
+            Generador de Bingos
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Configuración</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="generadorForm">
+                    <div class="row g-3">
+                        <!-- Número de Bingos -->
+                        <div class="col-md-6">
+                            <label for="numero_bingos" class="form-label">
+                                <i class="bi bi-hash me-1"></i>
+                                Número de Bingos
+                            </label>
+                            <input type="number" class="form-control" id="numero_bingos" name="numero_bingos" 
+                                   value="{{ defaults.numero_bingos }}" min="2" max="10000" required>
+                            <div class="form-text">Cantidad de bingos físicos a generar (debe ser par)</div>
+                        </div>
+                        
+                        <!-- Seed -->
+                        <div class="col-md-6">
+                            <label for="seed" class="form-label">
+                                <i class="bi bi-key me-1"></i>
+                                Seed (Semilla)
+                            </label>
+                            <input type="number" class="form-control" id="seed" name="seed" 
+                                   value="{{ defaults.seed }}" required>
+                            <div class="form-text">Para reproducibilidad. Misma seed = mismos bingos</div>
+                        </div>
+                        
+                        <!-- Nombre Base -->
+                        <div class="col-md-6">
+                            <label for="nombre_base" class="form-label">
+                                <i class="bi bi-tag me-1"></i>
+                                Nombre Base
+                            </label>
+                            <input type="text" class="form-control" id="nombre_base" name="nombre_base" 
+                                   value="{{ defaults.nombre_base }}" required>
+                            <div class="form-text">Prefijo para los archivos generados</div>
+                        </div>
+                        
+                        <!-- Números por Cartón -->
+                        <div class="col-md-6">
+                            <label for="numeros_por_carton" class="form-label">
+                                <i class="bi bi-grid-3x3 me-1"></i>
+                                Números por Cartón
+                            </label>
+                            <input type="number" class="form-control" id="numeros_por_carton" name="numeros_por_carton" 
+                                   value="{{ defaults.numeros_por_carton }}" min="1" max="30" required>
+                        </div>
+                        
+                        <!-- Número Máximo -->
+                        <div class="col-md-4">
+                            <label for="numero_maximo" class="form-label">
+                                <i class="bi bi-arrow-up-circle me-1"></i>
+                                Número Máximo
+                            </label>
+                            <input type="number" class="form-control" id="numero_maximo" name="numero_maximo" 
+                                   value="{{ defaults.numero_maximo }}" min="10" max="99" required>
+                            <div class="form-text">Rango: 1 a este número</div>
+                        </div>
+                        
+                        <!-- Cartones por Bingo -->
+                        <div class="col-md-4">
+                            <label for="cartones_por_bingo" class="form-label">
+                                <i class="bi bi-layers me-1"></i>
+                                Cartones por Bingo
+                            </label>
+                            <input type="number" class="form-control" id="cartones_por_bingo" name="cartones_por_bingo" 
+                                   value="{{ defaults.cartones_por_bingo }}" min="1" max="6" required>
+                            <div class="form-text">A, B, C...</div>
+                        </div>
+                        
+                        <!-- Bingos por Fila -->
+                        <div class="col-md-4">
+                            <label for="bingos_por_fila" class="form-label">
+                                <i class="bi bi-layout-split me-1"></i>
+                                Bingos por Fila
+                            </label>
+                            <input type="number" class="form-control" id="bingos_por_fila" name="bingos_por_fila" 
+                                   value="{{ defaults.bingos_por_fila }}" min="1" max="4" required>
+                            <div class="form-text">En formato Corel</div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg" id="btnGenerar">
+                            <i class="bi bi-lightning-fill me-2"></i>
+                            Generar Bingos
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Info Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Información
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="infoCalculo">
+                    <p class="mb-2"><strong>Combinaciones a generar:</strong></p>
+                    <p class="h4 text-primary" id="totalCombinaciones">3000</p>
+                    
+                    <p class="mb-2 mt-3"><strong>Filas en archivo Corel:</strong></p>
+                    <p class="h4 text-success" id="filasCorel">500</p>
+                    
+                    <p class="mb-2 mt-3"><strong>Numeración:</strong></p>
+                    <p class="mb-1">CARTON 1: <span id="rangoCarton1">0001 - 0500</span></p>
+                    <p class="mb-0">CARTON 2: <span id="rangoCarton2">0501 - 1000</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Archivos que se generarán -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-file-earmark me-2"></i>
+                    Archivos a Generar
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>
+                        <code>*_simple.csv</code>
+                        <br><small class="text-muted">1 fila = 1 cartón</small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i>
+                        <code>*_corel.csv</code>
+                        <br><small class="text-muted">Formato para Corel Draw</small>
+                    </li>
+                    <li>
+                        <i class="bi bi-file-earmark-text text-secondary me-2"></i>
+                        <code>*_info.txt</code>
+                        <br><small class="text-muted">Metadatos de generación</small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Calcular y mostrar información en tiempo real
+    function actualizarInfo() {
+        const numeroBingos = parseInt(document.getElementById('numero_bingos').value) || 0;
+        const cartonesPorBingo = parseInt(document.getElementById('cartones_por_bingo').value) || 3;
+        const bingosPorFila = parseInt(document.getElementById('bingos_por_fila').value) || 2;
+        
+        const totalCombinaciones = numeroBingos * cartonesPorBingo;
+        const filasCorel = Math.floor(numeroBingos / bingosPorFila);
+        const inicioCarton2 = Math.floor(numeroBingos / 2) + 1;
+        
+        document.getElementById('totalCombinaciones').textContent = totalCombinaciones.toLocaleString();
+        document.getElementById('filasCorel').textContent = filasCorel.toLocaleString();
+        document.getElementById('rangoCarton1').textContent = `0001 - ${String(filasCorel).padStart(4, '0')}`;
+        document.getElementById('rangoCarton2').textContent = `${String(inicioCarton2).padStart(4, '0')} - ${String(numeroBingos).padStart(4, '0')}`;
+    }
+    
+    // Event listeners
+    document.getElementById('numero_bingos').addEventListener('input', actualizarInfo);
+    document.getElementById('cartones_por_bingo').addEventListener('input', actualizarInfo);
+    document.getElementById('bingos_por_fila').addEventListener('input', actualizarInfo);
+    
+    // Mostrar loading al enviar
+    document.getElementById('generadorForm').addEventListener('submit', function() {
+        const btn = document.getElementById('btnGenerar');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generando...';
+    });
+    
+    // Inicializar
+    actualizarInfo();
+</script>
+{% endblock %}
